@@ -1,0 +1,25 @@
+object Chapter2 {
+  // Ex 2.1
+  def fib(n: Int): Int = {
+    def helper(n: Int, acc1: Int, acc2: Int): Int = {
+      n match {
+        case 0 => acc1
+	case _ => helper(n - 1, acc2, acc1 + acc2)
+      }
+    }
+    helper(n, 0, 1)
+  }
+  
+  // Ex 2.2
+  def isSorted[T](arr: Array[T], cmp: (T, T) => Boolean): Boolean = {
+    for (i <- (0 until arr.size - 1))
+      if (!cmp(arr(i), arr(i+1)))
+        return false
+    true
+  }
+
+  // Ex 2.3
+  def curry[A,B,C](f: (A, B) => C): A => (B => C) = {
+    (a:A) => (b: B) => f(a, b)
+  }
+}
