@@ -4,14 +4,14 @@ sealed trait myOption[+A] {
   def map[B](f: A => B): myOption[B] = {
     this match {
       case mySome(a) => mySome(f(a))
-      case _ => myNone: myOption[B]
+      case _ => myNone
     }
   }
 
   def flatMap[B](f: A => myOption[B]): myOption[B] = {
     this match {
       case mySome(a) => f(a)
-      case _ => myNone: myOption[B]
+      case _ => myNone
     }
   }
 
@@ -46,3 +46,93 @@ case class mySome[+A](d: A) extends myOption[A] {
 val some = mySome(666)
 val someOther = mySome(23)
 val none = myNone
+
+// Ex 4.2
+// I couldn't do this one. Closest I got:
+// m.flatMap(mean(ds.map(d => math.pow(d - m))))
+// ... which is actually pretty close. (I forgot the
+// second argument to pow, which was really just
+// a typo.  m was an Option that might contain
+// the mean of ds.
+// Fixing it up, I get ...
+// mean(ds).flatMap(mean(ds.map(d => math.pow(d - m, 2))))
+// and all that's missing is the m in the flatMap expression.
+// mean(ds).flatMap(m => mean(ds.map(d => math.pow(d - m, 2))))
+
+def mean(ds: Seq[Double]): Option[Double] = ds match {
+     case Nil => None
+     case _ => Some(ds.sum / ds.size)
+}
+
+def noSomeVariance(ds: Seq[Double]): Double = {
+  def mean(ds: Seq[Double]): Double = ds.sum / ds.size
+  val m = mean(ds)
+  mean(ds.map(n => math.pow(n - m, 2)))
+}
+
+def lift[A, B](f: A => B): Option[A] => Option[B] = _ map f
+
+// Ex 4.3
+// Not how they want us to do it.  Use flatMap instead.
+def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = {
+  (a, b) match {
+    case (Some(x), Some(y)) => Some(f(x, y))
+    case _ => None
+  }
+}
+// How it is supposed to be done:
+def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = {
+  a.flatMap(aa => b.map(bb => f(aa, bb)))
+}
+
+// Ex 4.4
+// My solution:
+def sequence[A](a: List[Option[A]]): Option[List[A]] = {
+  a match {
+    case Nil => Some(List())
+    case None::t => None
+    case Some(aa)::t => sequence(t).map(rest => aa::rest)
+  }
+}
+// But the cases where the head is None and Some can be combined using flatMap.
+// Of course.
+def sequence[A](a: List[Option[A]]): Option[List[A]] = {
+  a match {
+    case Nil => Some(Nil)
+    case h::t => h.flatMap(hh => sequence(t).map(hh::_))
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
