@@ -169,6 +169,66 @@ object Chapter3 {
     startsHere(list, sub) || (!list.isEmpty && hasSubsequence(list.drop(1), sub))
   }
 
+  // Ex 3.25
+  def size[A](root: Tree[A]): Int = {
+    root match {
+      case null => 0
+      case Branch(left, right) => 1 + size(left) + size(right)
+      case Leaf(_) => 1
+    }
+  }
+
+  // Ex 3.26
+  def maximum(root: Tree[Int]): Int = {
+    root match {
+      case null => 0
+      case Leaf(n) => n
+      case Branch(left, right) => maximum(left).max(maximum(right))
+    }
+  }
+
+  // Ex 3.27
+  def depth[A](root: Tree[Int]): Int = {
+    root match {
+      case null => 0
+      case Leaf(_) => 1
+      case Branch(left, right) => 1 + depth(left).max(depth(right))
+    }
+  }
+
+  // Ex 3.28
+  def map[A, B](root: Tree[A])(f: A => B): Tree[B] = {
+    root match {
+      case null => null
+      case Branch(left, right) => Branch(map(left)(f), map(right)(f))
+      case Leaf(a) => Leaf(f(a))
+    }
+  }
+
+  // Ex 3.29
+  def treeFold[A, B](t: Tree[A], z: B)(bf: (B, B) => B, af: A => B): B = {
+    t match {
+      case null => z
+      case Branch(left, right) => bf(treeFold(left, z)(bf, af), treeFold(right, z)(bf, af))
+      case Leaf(a) => af(a)
+    }
+  }
+
+  def tfSize[A](t: Tree[A]): Int = {
+    treeFold(t, 0)(_ + _ + 1, A => 1)
+  }
+
+  def tfMaximum(t: Tree[Int]): Int = {
+    treeFold(t, 0)(_ max _, i => i)
+  }
+
+  def tfDepth[A](t: Tree[A]): Int = {
+    treeFold(t, 0)((l: Int, r: Int) => 1 + l.max(r), A => 1)
+  }
+
+  def tfMap[A, B](t: Tree[A])(f: A => B): Tree[B] = {
+    treeFold(t, null: Tree[B])((l: Tree[B], r: Tree[B]) => Branch(l, r), (a: A) => Leaf(f(a)))
+  }
 
   // Helper functions from the text.
   def foldRight[A,B](as: List[A], z: B)(f: (A, B) => B): B = {
@@ -179,5 +239,9 @@ object Chapter3 {
   }
 
   def Cons[A](a: A, l:List[A]): List[A] = a::l
+
+  sealed trait Tree[+A]
+  case class Leaf[A](value: A) extends Tree[A]
+  case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
 
 }
