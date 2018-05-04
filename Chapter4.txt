@@ -1,0 +1,48 @@
+// Ex 4.1
+sealed trait myOption[+A] {
+
+  def map[B](f: A => B): myOption[B] = {
+    this match {
+      case mySome(a) => mySome(f(a))
+      case _ => myNone: myOption[B]
+    }
+  }
+
+  def flatMap[B](f: A => myOption[B]): myOption[B] = {
+    this match {
+      case mySome(a) => f(a)
+      case _ => myNone: myOption[B]
+    }
+  }
+
+  def getOrElse[B >: A](default : => B): B = {
+    this match {
+      case mySome(b) => b
+      case _ => default
+    }
+  }
+
+  def orElse[B >: A](ob: => myOption[B]): myOption[B] = {
+    this match {
+      case mySome(b) => this
+      case _ => ob
+    }
+  }
+
+  def filter(f: A => Boolean): myOption[A] = {
+    this match {
+      case mySome(a) if f(a) => this
+      case _ => myNone
+    }
+  }
+}
+
+case object myNone extends myOption[Nothing]
+
+case class mySome[+A](d: A) extends myOption[A] {
+
+}
+
+val some = mySome(666)
+val someOther = mySome(23)
+val none = myNone

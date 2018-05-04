@@ -1,0 +1,242 @@
+// Ex 3.1
+// 15: Int
+
+// Ex 3.2
+def tail[A](l: List[A]): List[A] = {
+  l match {
+    case Nil => Nil // Or throw exception?
+    case h::t => t
+  }
+}
+
+// Ex 3.3
+def setHead[A](l: List[A], nh: A): List[A] = {
+  l match {
+    case Nil => nh::Nil // Or throw exception?
+    case oh::t => nh::t
+  }
+}
+
+// Ex 3.4
+def drop[A](l: List[A], n: Int): List[A] = {
+  (l, n) match {
+    case (_, tooLow) if tooLow < 0 => l
+    case (_, 0) => l
+    case (Nil, _) => Nil
+    case (h::t, _) => drop(t, n-1)
+  }
+}
+
+// Ex 3.5
+def dropWhile[A](l: List[A], f: A => Boolean): List[A] = {
+  l match {
+    case Nil => Nil
+    case h::t => if (f(h)) dropWhile(t, f) else l
+  }
+}
+
+// Ex 3.6
+def init[A](l: List[A]): List[A] = {
+  def helper[A](in: List[A], acc: List[A]): List[A] = {
+    in match {
+      case Nil => acc
+      case _::Nil => acc
+	    case h::t => helper(t, acc :+ h)
+    }
+  }
+  helper(l, List())
+}
+
+// Ex 3.7
+def product(l: List[Int]): Int = {
+  def multiply(x: Int, y: Int): Int = {
+    (x, y) match {
+      case (0, _) => 0
+      case _ => x * y
+    }
+  }
+  l.reduce((x, y) => multiply(x, y))
+}
+
+// Ex 3.8
+// I got List(1, 2, 3).
+
+// Ex 3.9
+def length[A](as: List[A]): Int = {
+  foldRight(as, 0)((a: A, i: Int) => 1  + i)
+}
+
+// Ex 3.10
+def foldLeft[A, B](as: List[A], z: B)(f: (A, B) => B): B = {
+  as match {
+    case Nil => z
+    case h::t => foldLeft(t, f(h, z))(f)
+  }
+}
+
+// Ex 3.12
+def reverse[A](l: List[A]): List[A] = {
+  foldLeft(l, Nil: List[A])((a: A, l: List[A]) => a::l)
+}
+
+// Ex 3.13
+def foldRight[A,B](l: List[A], z: B)(f: (A, B) => B): B = {
+  foldLeft(l.reverse, z)(f) // ???
+}
+
+// Ex 3.14
+def append[A](l: List[A], a: A): List[A] = {
+  foldRight(l, List(a))((a: A, l: List[A]) => a::l)
+}
+
+// Ex 3.15
+def concatenate[A](lol: List[List[A]]): List[A] = {
+  def concatenate2[A](l1: List[A], l2: List[A]): List[A] = {
+    foldRight(l1, l2)((a: A, l: List[A]) => a::l)
+  }
+  foldRight(lol, Nil: List[A])(concatenate2)
+}
+
+// Ex 3.16
+def add1ToAll(l: List[Int]): List[Int] = {
+  foldRight(l, Nil: List[Int])((a: Int, l: List[Int]) => Cons(a + 1, l))
+}
+
+// Ex 3.17
+def ds2Ss(ds: List[Double]): List[String] = {
+  foldRight(ds, Nil: List[String])((d: Double, ss: List[String]) => Cons(d.toString, ss))
+}
+
+// Ex 3.18
+def map[A, B](as: List[A])(f: A => B): List[B] = {
+  foldRight(as, Nil: List[B])((a: A, bs: List[B]) => f(a)::bs)
+}
+
+// Ex 3.19
+def filter[A](as: List[A])(f: A => Boolean): List[A] = {
+  def consIf(a: A, as: List[A]): List[A] = {
+    if (f(a)) a::as
+    else as
+  }
+  foldRight(as, Nil: List[A])(consIf)
+}
+
+// Ex 3.20
+def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] = {
+  concatenate(map(as)(f))
+}
+
+// Ex 3.21
+def filter[A](as: List[A])(f: A => Boolean): List[A] = {
+  def condition(a: A): List[A] = {
+    if (f(a)) List(a)
+    else Nil
+  }
+  flatMap(as)(condition)
+}
+
+// Ex 3.22
+def zipAdd(l1: List[Int], l2: List[Int]): List[Int] = {
+  val numInts = math.min(l1.size, l2.size)
+  def addFromLists(i: Int, ints: List[Int]): List[Int] = {
+    val cur = l1(i) + l2(i)
+    cur::ints
+  }
+  foldRight((0 until numInts).toList, Nil: List[Int])(addFromLists)
+}
+
+// Ex 3.23
+def zipWith[A](as1: List[A], as2: List[A])(f: (A, A) => A): List[A] = {
+  val len = math.min(as1.size, as2.size)
+  def doToBoth(i: Int, as: List[A]): List[A] = {
+    f(as1(i), as2(i))::as
+  }
+  foldRight((0 until len).toList, Nil: List[A])(doToBoth)
+}
+
+// Ex 3.24
+def hasSubsequence(list: List[_], sub: List[_]): Boolean = {
+  def startsHere(whole: List[_], part: List[_]): Boolean = {
+    (whole, part) match {
+      case (_, Nil) => true
+	case (h1::t1, h2::t2) if h1 == h2 => startsHere(t1, t2)
+      case _ => false
+    }
+  }
+  startsHere(list, sub) || (!list.isEmpty && hasSubsequence(list.drop(1), sub))
+}
+
+// Ex 3.25
+def size[A](root: Tree[A]): Int = {
+  root match {
+    case null => 0
+    case Branch(left, right) => 1 + size(left) + size(right)
+    case Leaf(_) => 1
+  }
+}
+
+// Ex 3.26
+def maximum(root: Tree[Int]): Int = {
+  root match {
+    case null => 0
+    case Leaf(n) => n
+    case Branch(left, right) => maximum(left).max(maximum(right))
+  }
+}
+
+// Ex 3.27
+def depth[A](root: Tree[Int]): Int = {
+  root match {
+    case null => 0
+    case Leaf(_) => 1
+    case Branch(left, right) => 1 + depth(left).max(depth(right))
+  }
+}
+
+// Ex 3.28
+def map[A, B](root: Tree[A])(f: A => B): Tree[B] = {
+  root match {
+    case null => null
+    case Branch(left, right) => Branch(map(left)(f), map(right)(f))
+    case Leaf(a) => Leaf(f(a))
+  }
+}
+
+// Ex 3.29
+def treeFold[A, B](t: Tree[A], z: B)(bf: (B, B) => B, af: A => B): B = {
+  t match {
+    case null => z
+    case Branch(left, right) => bf(treeFold(left, z)(bf, af), treeFold(right, z)(bf, af))
+    case Leaf(a) => af(a)
+  }
+}
+
+def tfSize[A](t: Tree[A]): Int = {
+  treeFold(t, 0)(_ + _ + 1, A => 1)
+}
+
+def tfMaximum(t: Tree[Int]): Int = {
+  treeFold(t, 0)(_ max _, i => i)
+}
+
+def tfDepth[A](t: Tree[A]): Int = {
+  treeFold(t, 0)((l: Int, r: Int) => 1 + l.max(r), A => 1)
+}
+
+def tfMap[A, B](t: Tree[A])(f: A => B): Tree[B] = {
+  treeFold(t, null: Tree[B])((l: Tree[B], r: Tree[B]) => Branch(l, r), (a: A) => Leaf(f(a)))
+}
+
+// Helper functions from the text.
+def foldRight[A,B](as: List[A], z: B)(f: (A, B) => B): B = {
+  as match {
+    case Nil => z
+    case a::tail => f(a, foldRight(tail, z)(f))
+  }
+}
+
+def Cons[A](a: A, l:List[A]): List[A] = a::l
+
+sealed trait Tree[+A]
+case class Leaf[A](value: A) extends Tree[A]
+case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
